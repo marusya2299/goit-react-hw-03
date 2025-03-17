@@ -1,44 +1,33 @@
-import Description from "../Description/Description";
-import Feedback from "../Feedback/Feedback";
-import Options from "../Options/Options";
 
-import { useState, useEffect } from 'react';
+import ContactList from "../ContactList/ContactList.jsx";
+import SearchBox from "../SearchBox/SearchBox.jsx";
+
+import { useState} from 'react';
+
+import data from "../../values.json";
 
 export default function App(){
-  const [values, setValues] = useState(()=>{
-    const savedValues = window.localStorage.getItem("feedback-values");
-    return savedValues ? JSON.parse(savedValues) : {good: 0, neutral: 0, bad: 0};
-  });
 
-  useEffect(() => {
-    window.localStorage.setItem("feedback-values", JSON.stringify(values));
-  }, [values]);
+  const [values, setValues]=useState(data);
+  const [filter, setFilter] = useState('');
 
-  const updateFeedback = (feedbackType)=>{
-    setValues(value => ({...value, [feedbackType]: value[feedbackType] + 1}));
-  }
+  
+  const deleteValue = (valueId) => {
+    setValues((prevValue) => {
+      return prevValue.filter((value) => value.id !== valueId);
+    });
+  };
 
-  const resetFeedback = ()=>{
-    setValues({good: 0, neutral: 0, bad: 0});
-  }
+  const visibleValues = values.filter((value) =>
+    value.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-  if (values.good+values.neutral+values.bad === 0) {
-    return(
-      <>
-        <Description />
-        <Options flag={false} updateFeedback={updateFeedback} resetFeedback={resetFeedback} />
-        <p>No feedback yet</p>
-      </>
-    )
-  }
-  else{
-    return(
-      <>
-        <Description />
-        <Options flag={true} updateFeedback={updateFeedback} resetFeedback={resetFeedback} />
-        <Feedback good={values.good} neutral={values.neutral} bad={values.bad} />
-      </>
-    )
+  return(
+    <div>
+      <h1>Phonebook</h1>
+        <SearchBox value={filter} onFilter={setFilter} />
+        <ContactList values={visibleValues} onDelete={deleteValue}/>
+    </div>
 
-  }
+  )
 }
